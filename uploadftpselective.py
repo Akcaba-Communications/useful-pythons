@@ -1,6 +1,6 @@
 import os.path, os
 import ftplib
-from datetime import datetime, timedelta
+from datetime import date
 
 # FTP Information
 ftpHost = "FTP_IP/HOST_NAME here"
@@ -14,13 +14,13 @@ ftpPath = "/recordings"
 localMachinePath = "/var/spool/asterisk"
 
 # Set to True if you want the files to be deleted from the local machine afterwards
-deleteAfter = True
+deleteAfter = False
 
 # Set amount of days to remove items before it
 days = 3
 
 
-currentDate = datetime.date()
+currentDay = date.today()
 
 
 def dirExists(ftp, dir):
@@ -39,8 +39,11 @@ def upload(ftp, localPath="/", remotePath="/", depth=0):
             newRemotePath = os.path.join(remotePath,fileName)
             if (os.path.isdir(newLocalPath)):
                 if (depth == 2):
-                    year,month,day = newLocalPath[len(localMachinePath):len(newLocalPath)]
-                    fileDate = datetime(int(year),int(month),int(day)).
+                    year,month,day = newLocalPath[(len(localMachinePath)+1):len(newLocalPath)].split("/")
+                    print(year, month, day)
+                    daysSince = int((date.today() - date(year,month,day)).days)
+                    if (daysSince <= days):
+                        continue
                 if (not (dirExists(ftp,newRemotePath))):
                     ftp.mkd(newRemotePath)
                 upload(ftp,newLocalPath,newRemotePath,depth+1)
@@ -57,5 +60,4 @@ def upload(ftp, localPath="/", remotePath="/", depth=0):
 ftp = ftplib.FTP(ftpHost,ftpUsername,ftpPassword)
 upload(ftp,localMachinePath,ftpPath)
 ftp.quit()
-
 
