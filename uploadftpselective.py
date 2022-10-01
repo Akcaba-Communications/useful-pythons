@@ -11,12 +11,12 @@ ftpPassword = "PASSWORD here"
 ftpPath = "/recordings"
 
 # Path of the local machine (will recursively copy everything inside and upload it)
-localMachinePath = "/var/spool/asterisk"
+localMachinePath = "/var/spool/asterisk/monitor"
 
 # Set to True if you want the files to be deleted from the local machine afterwards
 deleteAfter = False
 
-# Set amount of days to remove items before it
+# Set amount of days to upload items before it
 days = 3
 
 
@@ -40,8 +40,8 @@ def upload(ftp, localPath="/", remotePath="/", depth=0):
             if (os.path.isdir(newLocalPath)):
                 if (depth == 2):
                     year,month,day = newLocalPath[(len(localMachinePath)+1):len(newLocalPath)].split("/")
-                    print(year, month, day)
-                    daysSince = int((date.today() - date(year,month,day)).days)
+                    daysSince = int((date.today() - date(int(year),int(month),int(day))).days)
+                    print(year, month, day, daysSince)
                     if (daysSince <= days):
                         continue
                 if (not (dirExists(ftp,newRemotePath))):
@@ -60,4 +60,3 @@ def upload(ftp, localPath="/", remotePath="/", depth=0):
 ftp = ftplib.FTP(ftpHost,ftpUsername,ftpPassword)
 upload(ftp,localMachinePath,ftpPath)
 ftp.quit()
-
