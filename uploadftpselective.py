@@ -14,7 +14,7 @@ ftpPath = "/recordings"
 localMachinePath = "/var/spool/asterisk/monitor"
 
 # Set to True if you want the files to be deleted from the local machine afterwards
-deleteAfter = False
+deleteAfter = True
 
 # Set amount of days to upload items before it
 days = 3
@@ -48,8 +48,16 @@ def upload(ftp, localPath="/", remotePath="/", depth=0):
                     ftp.mkd(newRemotePath)
                 upload(ftp,newLocalPath,newRemotePath,depth+1)
             else:
+                print(newLocalPath)
                 file = open(newLocalPath,"r")
-                ftp.storbinary("STOR "+newRemotePath, file)
+                print("Uploading", newLocalPath, "to", newRemotePath)
+                try:
+                    ftp.storbinary("STOR "+newRemotePath, file)
+                except (Exception):
+                    print(Exception)
+                    file.close()
+                    continue
+                print("Upload complete")
                 file.close()
                 if (deleteAfter):
                     os.remove(newLocalPath)
@@ -58,5 +66,7 @@ def upload(ftp, localPath="/", remotePath="/", depth=0):
 
 # Open ftp connection
 ftp = ftplib.FTP(ftpHost,ftpUsername,ftpPassword)
+ftp.set_debuglevel(2)
+ftp.passive = False
 upload(ftp,localMachinePath,ftpPath)
 ftp.quit()
